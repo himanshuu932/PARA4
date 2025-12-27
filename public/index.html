@@ -56,16 +56,16 @@
 <body>
     <div class="container">
         <h1>ACCESS DENIED</h1>
-        <p>This secure portal is only accessible via the <strong>SuperSecureBrowser/1.0</strong>.</p>
+        <p>Access Denied. Unrecognized Client.</p>
 
         <p>Your Current Browser Signature:</p>
         <div class="ua-display" id="ua-box">Loading...</div>
 
         <p>Please return with a compatible secure request.</p>
 
-        <div class="hint" style="margin-top: 30px; font-size: 0.8rem;">
-            <a href="/api/logs" style="color: #444; text-decoration: none;">[debug: view_access_logs]</a>
-            <!-- Hint: Analyze the logs to find who got a 200 OK response! -->
+        <!-- Hidden debug link -->
+        <div class="hint" style="display: none;">
+            <a href="/api/logs">[debug: view_access_logs]</a>
         </div>
     </div>
 
@@ -78,6 +78,25 @@
             .catch(err => {
                 document.getElementById('ua-box').textContent = "Error detecting signature.";
             });
+
+        // Disable Right Click
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // Disable Developer Tools Shortcuts
+        document.onkeydown = function (e) {
+            // F12
+            if (e.keyCode == 123) {
+                return false;
+            }
+            // Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C
+            if (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0) || e.keyCode == 'C'.charCodeAt(0))) {
+                return false;
+            }
+            // Ctrl+U (View Source)
+            if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) {
+                return false;
+            }
+        }
     </script>
 </body>
 
