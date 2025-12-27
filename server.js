@@ -103,4 +103,20 @@ app.get('/ping', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Level 4 (UA Spoof) running on port ${PORT}`);
     console.log(`Question ID: ${QUESTION_ID}`);
+
+    // Self-ping to keep Render alive
+    const PING_INTERVAL = 10 * 60 * 1000; // 10 minutes
+    setInterval(() => {
+        // Use RENDER_EXTERNAL_URL if set, otherwise use the provided URL (or localhost for dev)
+        // The user specifically requested ' https://itsnotsoeasy.onrender.com ', so we'll prioritize that or localhost if needed.
+        // Actually, best practice:
+        const url = process.env.RENDER_EXTERNAL_URL || 'https://itsnotsoeasy.onrender.com';
+
+        console.log(`[KEEP-ALIVE] Sending ping to ${url}/ping`);
+        fetch(`${url}/ping`)
+            .then(res => res.json())
+            .then(data => console.log(`[KEEP-ALIVE] Pinged successfully at ${data.timestamp}`))
+            .catch(err => console.error(`[KEEP-ALIVE] Ping failed: ${err.message}`));
+    }, PING_INTERVAL);
+    console.log('[KEEP-ALIVE] Self-ping enabled every 10 minutes');
 });
