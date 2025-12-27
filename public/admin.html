@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            background-color: #0f1f0f;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+
+        .container {
+            border: 2px solid #00ff00;
+            padding: 2rem;
+            max-width: 600px;
+            background: rgba(0, 0, 0, 0.8);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .success-msg {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .flag-box {
+            border: 1px dashed #00ff00;
+            padding: 1rem;
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            font-weight: bold;
+        }
+
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: inherit;
+        }
+
+        button:hover {
+            background: #00cc00;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>ACCESS GRANTED</h1>
+        <p class="success-msg">Welcome, SuperSecureBrowser user.</p>
+
+        <p>System Codeword:</p>
+        <div class="flag-box" id="flag">BUG_FOUND{headers_can_be_misleading}</div>
+
+        <button onclick="verify()">CLAIM REWARD</button>
+    </div>
+
+    <script>
+        function verify() {
+            const code = document.getElementById('flag').textContent;
+            const urlParams = new URLSearchParams(window.location.search);
+            const teamcode = urlParams.get('teamcode') || localStorage.getItem('teamcode');
+            const btn = document.querySelector('button');
+            const msgArea = document.createElement('div');
+            msgArea.style.marginTop = '1rem';
+            msgArea.style.fontWeight = 'bold';
+            btn.parentNode.insertBefore(msgArea, btn.nextSibling);
+
+            btn.disabled = true;
+            btn.textContent = "Verifying...";
+
+            fetch('/api/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code, teamcode })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        msgArea.style.color = '#00ff00';
+                        msgArea.textContent = data.message + " Redirecting in 3 seconds...";
+
+                        let countdown = 3;
+                        const interval = setInterval(() => {
+                            countdown--;
+                            msgArea.textContent = data.message + ` Redirecting in ${countdown} seconds...`;
+                            if (countdown <= 0) {
+                                clearInterval(interval);
+                                if (data.redirect) window.location.href = data.redirect;
+                            }
+                        }, 1000);
+                    } else {
+                        msgArea.style.color = 'red';
+                        msgArea.textContent = "Verification Failed: " + data.message;
+                        btn.disabled = false;
+                        btn.textContent = "CLAIM REWARD";
+                    }
+                })
+                .catch(err => {
+                    msgArea.style.color = 'red';
+                    msgArea.textContent = "Error: " + err.message;
+                    btn.disabled = false;
+                    btn.textContent = "CLAIM REWARD";
+                });
+        }
+    </script>
+</body>
+
+</html>

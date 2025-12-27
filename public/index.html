@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Restricted</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #ff4444;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+
+        .container {
+            border: 2px solid #ff4444;
+            padding: 2rem;
+            max-width: 600px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .ua-display {
+            background: #333;
+            color: #fff;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            word-break: break-all;
+        }
+
+        .hint {
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>ACCESS DENIED</h1>
+        <p>This secure portal is only accessible via the <strong>SuperSecureBrowser/1.0</strong>.</p>
+
+        <p>Your Current Browser Signature:</p>
+        <div class="ua-display" id="ua-box">Loading...</div>
+
+        <p>Please return with a compatible secure request.</p>
+
+        <div class="hint" style="margin-top: 30px; font-size: 0.8rem;">
+            <a href="/api/logs" style="color: #444; text-decoration: none;">[debug: view_access_logs]</a>
+            <!-- Hint: Analyze the logs to find who got a 200 OK response! -->
+        </div>
+    </div>
+
+    <script>
+        fetch('/api/info')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('ua-box').textContent = data.userAgent;
+            })
+            .catch(err => {
+                document.getElementById('ua-box').textContent = "Error detecting signature.";
+            });
+    </script>
+</body>
+
+</html>
