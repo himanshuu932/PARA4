@@ -48,6 +48,23 @@ app.get('/api/logs', (req, res) => {
     const totalLogs = 150; // Total entries (> 100)
     const successIndex = 42; // index 42 = 43rd entry
 
+    // Decoys that are similar to the real one ("Hit and Trial" confusion)
+    const decoyUAs = [
+        'SuperSecureBrowser/v1.5',
+        'SuperSecureBrowser/v2.5',
+        'SuperSecureBrowser/v2.34',
+        'SuperSecureBrowser/v5.0-Beta',
+        'SuperSecureBrowser/v5.5-Rc1',
+        'SuperSecureBrowser/v4.1.1'
+    ];
+
+    // Pick 5 random slots for decoys (excluding the success index)
+    const decoyIndices = new Set();
+    while (decoyIndices.size < 5) {
+        const r = Math.floor(Math.random() * totalLogs);
+        if (r !== successIndex) decoyIndices.add(r);
+    }
+
     const uas = [
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
@@ -63,8 +80,15 @@ app.get('/api/logs', (req, res) => {
         const timestamp = date.toISOString().replace('T', ' ').substring(0, 19);
 
         if (i === successIndex) {
+            // THE REAL ONE
             logs.push(`[${timestamp}] IP: 127.0.0.1       | UA: SuperSecureBrowser/v5.5-Alpha      | STATUS: 200 OK`);
+        } else if (decoyIndices.has(i)) {
+            // THE DECOY (Fake Success with similar name)
+            const decoyUA = decoyUAs[Math.floor(Math.random() * decoyUAs.length)];
+            const fakeIP = `10.0.${Math.floor(Math.random() * 10)}.${Math.floor(Math.random() * 255)}`;
+            logs.push(`[${timestamp}] IP: ${fakeIP.padEnd(15)} | UA: ${decoyUA.padEnd(34)} | STATUS: 200 OK`);
         } else {
+            // STANDARD FAILURE
             const ip = `192.168.1.${Math.floor(Math.random() * 250) + 1}`;
             const ua = uas[Math.floor(Math.random() * uas.length)];
             // Pad UA for cleaner look
