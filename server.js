@@ -8,9 +8,6 @@ const QUESTION_ID = process.env.QUESTION_ID || 'level4_ua_spoof';
 const MAIN_BACKEND_URL = 'https://buggit-backend-yy8i.onrender.com/api/store-result';
 
 app.use(express.json());
-app.use(express.json());
-// app.use(express.static('public')); // MOVED DOWN
-
 
 // Helper function to send result to main backend (backend-to-backend)
 async function sendToMainBackend(teamcode, questionId) {
@@ -47,17 +44,36 @@ app.get('/', (req, res) => {
 
 // NEW: Log Endpoint (The Info Disclosure)
 app.get('/api/logs', (req, res) => {
-    const logs = `
-[2024-12-27 08:00:01] IP: 192.168.1.5 | UA: Mozilla/5.0 (Windows NT 10.0) | STATUS: 403 Forbidden
-[2024-12-27 08:01:15] IP: 10.0.0.23   | UA: Chrome/120.0.0.0          | STATUS: 403 Forbidden
-[2024-12-27 08:02:44] IP: 192.168.1.8 | UA: Safari/537.36             | STATUS: 403 Forbidden
-[2024-12-27 08:05:00] IP: 127.0.0.1   | UA: SuperSecureBrowser/v5.5-Alpha | STATUS: 200 OK
-[2024-12-27 08:06:12] IP: 192.168.1.9 | UA: Firefox/118.0             | STATUS: 403 Forbidden
-[2024-12-27 08:10:30] IP: 10.0.0.55   | UA: Edge/119.0.0.0            | STATUS: 403 Forbidden
-    `.trim();
+    const logs = [];
+    const totalLogs = 150; // Total entries (> 100)
+    const successIndex = 42; // index 42 = 43rd entry
+
+    const uas = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+        'Mozilla/5.0 (X11; Linux x86_64)',
+        'Chrome/120.0.0.0 Safari/537.36',
+        'Safari/605.1.15',
+        'Edge/119.0.0.0'
+    ];
+
+    for (let i = 0; i < totalLogs; i++) {
+        // Mock timestamp: getting recent times
+        const date = new Date(Date.now() - (totalLogs - i) * 60000); // 1 min apart
+        const timestamp = date.toISOString().replace('T', ' ').substring(0, 19);
+
+        if (i === successIndex) {
+            logs.push(`[${timestamp}] IP: 127.0.0.1       | UA: SuperSecureBrowser/v5.5-Alpha      | STATUS: 200 OK`);
+        } else {
+            const ip = `192.168.1.${Math.floor(Math.random() * 250) + 1}`;
+            const ua = uas[Math.floor(Math.random() * uas.length)];
+            // Pad UA for cleaner look
+            logs.push(`[${timestamp}] IP: ${ip.padEnd(15)} | UA: ${ua.padEnd(34)} | STATUS: 403 Forbidden`);
+        }
+    }
 
     res.set('Content-Type', 'text/plain');
-    res.send(logs);
+    res.send(logs.join('\n'));
 });
 
 app.use(express.static('public'));
